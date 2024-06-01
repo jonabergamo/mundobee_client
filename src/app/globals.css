@@ -18,6 +18,11 @@
   border: 6px solid transparent;
   background-clip: content-box;
 }
+
+body {
+  overflow-y: overlay;
+  scrollbar-gutter: stable;
+}
  
 @layer base {
   :root {

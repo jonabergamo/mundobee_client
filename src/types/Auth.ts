@@ -1,7 +1,7 @@
 export type AuthToken = {
   access_token: string;
   refresh_token: string;
-  statusCode: number;
+  statusCode?: number;
 };
 
 export type User = {

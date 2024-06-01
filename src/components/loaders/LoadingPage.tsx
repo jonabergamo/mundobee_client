@@ -15,7 +15,7 @@ export default function LoadingPage() {
   return (
     <div className="text-primary h-screen w-screen flex flex-col gap-5 justify-center items-center">
       <DotsLoader />
-      <span className="mt-32">Carregando...</span>
+      <span >Carregando...</span>
     </div>
   );
 }

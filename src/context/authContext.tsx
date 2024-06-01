@@ -115,7 +115,9 @@ export function AuthProvider({ children }: Readonly<AuthProviderProps>) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ signIn, signOut, user, isLoading }}>
+    <AuthContext.Provider
+      value={{ signIn, signOut, user, isLoading }}
+    >
       {children}
     </AuthContext.Provider>
   );

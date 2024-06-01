@@ -39,8 +39,8 @@ export default function UserProfile() {
     : "";
 
   return (
-    <div className="flex gap-4 items-center">
-      <Avatar >
+    <div className="right-4 top-4 flex gap-4 items-center">
+      <Avatar>
         <AvatarImage src={""} alt="@shadcn" />
         <AvatarFallback>{initials}</AvatarFallback>
       </Avatar>

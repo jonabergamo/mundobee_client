@@ -22,7 +22,7 @@ export default function RootLayout({
       <body className={cn(inter.className)}>
         <Providers>
           <CustomToaster />
-          <main className="flex overflow-x-hidden overflow-y-auto text-foreground bg-background h-screen w-screen">
+          <main className="flex overflow-hidden text-foreground bg-background h-screen w-screen">
             {children}
           </main>
         </Providers>
