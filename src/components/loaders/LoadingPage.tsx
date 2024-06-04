@@ -13,9 +13,9 @@ export default function LoadingPage() {
   }, [router]);
 
   return (
-    <div className="text-primary h-screen w-screen flex flex-col gap-5 justify-center items-center">
+    <div className="flex h-screen w-screen flex-col items-center justify-center gap-5 text-primary">
       <DotsLoader />
-      <span >Carregando...</span>
+      <span>Carregando...</span>
     </div>
   );
 }

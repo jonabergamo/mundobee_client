@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { QrReader } from "react-qr-reader";
+import { useZxing } from "react-zxing";
 import DotsLoader from "./loaders/DotsLoader";
 import { IoAlert } from "react-icons/io5";
 import jsQR from "jsqr";
@@ -16,6 +16,11 @@ type ScanProps = {
 function Scan({ onScan }: ScanProps) {
   const [cameraPermission, setCameraPermission] = useState("prompt"); // 'granted', 'denied', or 'prompt'
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const { ref } = useZxing({
+    onDecodeResult(result) {
+      if (onScan) onScan(result.getText());
+    },
+  });
 
   useEffect(() => {
     // Verificar o status da permissão da câmera
@@ -101,14 +106,7 @@ function Scan({ onScan }: ScanProps) {
       <div
         className={cameraPermission !== "granted" || cameraError ? "flex" : ""}
       >
-        <QrReader
-          onResult={(result) => {
-            if (result && onScan) {
-              onScan(result?.getText());
-            }
-          }}
-          constraints={{ facingMode: "environment" }}
-        />
+        <video ref={ref} />
         {cameraError ? (
           <div className="flex flex-col gap-4 items-center justify-center w-full">
             <IoAlert className="text-8xl text-primary" />

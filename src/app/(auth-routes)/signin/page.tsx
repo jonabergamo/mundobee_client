@@ -39,7 +39,7 @@ export default function Login() {
       </div>
       <div className="flex items-center justify-center p-6 lg:p-12">
         <div className="w-full max-w-md space-y-6">
-          <div className="space-y-2 text-center flex flex-col items-center ">
+          <div className="flex flex-col items-center space-y-2 text-center">
             <div className="pb-5"></div>
             <h1 className="text-3xl font-bold">Bem vindo de volta!</h1>
             <p className="text-gray-500 dark:text-gray-400">
@@ -52,7 +52,7 @@ export default function Login() {
             onChange={() => setError("")}
           >
             <div className="space-y-2">
-              <Label htmlFor="email" className={error ? " text-red-500" : ""}>
+              <Label htmlFor="email" className={error ? "text-red-500" : ""}>
                 Email
               </Label>
               <Input
@@ -60,14 +60,14 @@ export default function Login() {
                 placeholder="m@example.com"
                 required
                 type="email"
-                className={error ? " border-red-500 border-spacing-5" : ""}
+                className={error ? "border-spacing-5 border-red-500" : ""}
               />
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label
                   htmlFor="password"
-                  className={error ? " text-red-500" : ""}
+                  className={error ? "text-red-500" : ""}
                 >
                   Senha
                 </Label>
@@ -76,7 +76,7 @@ export default function Login() {
                 id="password"
                 required
                 type="password"
-                className={error ? " border-red-500 border-spacing-5" : ""}
+                className={error ? "border-spacing-5 border-red-500" : ""}
               />
             </div>
             <Button className="w-full" type="submit">

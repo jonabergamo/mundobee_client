@@ -20,7 +20,7 @@ export default function Home() {
       }
 
       const response: AxiosResponse<any, any> = await axios.get(
-        `devices/user/${user.sub}`
+        `devices/user/${user.sub}`,
       );
       return response.data;
     },
@@ -32,12 +32,12 @@ export default function Home() {
   }, [data, error]);
 
   return (
-    <div className="h-screen flex flex-col gap-3">
+    <div className="flex h-screen flex-col gap-3">
       <Header title="Todos os dispositivos" />
       <div className="flex justify-end">
         <NewDeviceDialog />
       </div>
-      <div className="gap-4 flex flex-wrap overflow-y-auto max-h-full mb-10 py-2 px-2">
+      <div className="mb-10 flex max-h-full flex-wrap gap-4 overflow-y-auto px-2 py-2">
         {data?.owned?.map((device: DeviceType, index: number) => {
           return <Device key={index} device={device} edit />;
         })}

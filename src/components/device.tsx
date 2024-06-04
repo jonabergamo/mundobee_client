@@ -59,7 +59,7 @@ export default function Device({ device, edit = false }: DeviceProps) {
       }
       timeoutRef.current = setTimeout(() => {
         setOnline(false);
-      }, 5000); // 5 segundos
+      }, 65000); // 5 segundos
     });
 
     socket.on("disconnect", () => {
