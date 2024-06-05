@@ -10,33 +10,33 @@ import { Metric } from "@/types/Metric";
 import { useTheme } from "next-themes";
 import { DateTime } from "luxon";
 
-type HumidityChartProps = {
+type inOutChartProps = {
   title?: string;
   description?: string;
   data?: Metric[];
   isLoading?: boolean;
   error?: any;
-  internalHumidityKey: string;
-  externalHumidityKey: string;
+  inKey: string;
+  outKey: string;
   actualZoom?: "day" | "week" | "month";
   id?: string;
   minIdeal?: number;
   maxIdeal?: number;
 };
 
-export default function HumidityChart({
+export default function InOutChart({
   title,
   data,
   isLoading = false,
   error,
-  internalHumidityKey,
-  externalHumidityKey,
+  inKey,
+  outKey,
   actualZoom = "month",
   id = "graph",
   description,
   minIdeal,
   maxIdeal,
-}: HumidityChartProps) {
+}: inOutChartProps) {
   const { theme } = useTheme();
   const [Chart, setChart] = useState<any>();
   const [selectedZoom, setSelectedZoom] = useState<string>(actualZoom);
@@ -50,11 +50,11 @@ export default function HumidityChart({
   const [chartData, setChartData] = useState<any>({
     series: [
       {
-        name: "Humidade Interna",
+        name: "Entradas",
         data: [],
       },
       {
-        name: "Humidade Externa",
+        name: "Saídas",
         data: [],
       },
     ],
@@ -85,7 +85,7 @@ export default function HumidityChart({
       yaxis: [
         {
           title: {
-            text: "Humidade Interna %",
+            text: "Entradas",
             style: {
               color: theme === "dark" ? "#FFF" : "#000",
               fontFamily: "Helvetica, Arial, sans-serif",
@@ -97,20 +97,14 @@ export default function HumidityChart({
               colors: theme === "dark" ? "#FFF" : "#000",
             },
             formatter: function (val: any) {
-              return `${val} %`;
+              return `${val}`;
             },
           },
-          min: 0,
-          max: 100,
-          tickAmount: 10,
         },
         {
-          min: 0,
-          max: 100,
-          tickAmount: 10,
           opposite: true,
           title: {
-            text: "Humidade Externa (%)",
+            text: "Saídas",
             style: {
               color: theme === "dark" ? "#FFF" : "#000",
             },
@@ -120,7 +114,7 @@ export default function HumidityChart({
               colors: theme === "dark" ? "#FFF" : "#000",
             },
             formatter: function (val: any) {
-              return `${val} %`;
+              return `${val}`;
             },
           },
         },
@@ -168,9 +162,9 @@ export default function HumidityChart({
             { series, seriesIndex, dataPointIndex, w }: any,
           ) {
             if (seriesIndex === 0) {
-              return `${val} %`;
+              return `${val} entradas`;
             } else if (seriesIndex === 1) {
-              return `${val} %`;
+              return `${val} saídas`;
             }
             return val;
           },
@@ -214,11 +208,11 @@ export default function HumidityChart({
       const labels = data.map((item: Metric) =>
         new Date(item.timestamp).toISOString(),
       );
-      const internalHumidity = data.map(
-        (item: Metric) => item[internalHumidityKey as keyof Metric],
+      const inCount = data.map(
+        (item: Metric) => item[inKey as keyof Metric],
       );
-      const externalHumidity = data.map(
-        (item: Metric) => item[externalHumidityKey as keyof Metric],
+      const outCount = data.map(
+        (item: Metric) => item[outKey as keyof Metric],
       );
 
       setChartData((prevChartData: any) => ({
@@ -226,11 +220,11 @@ export default function HumidityChart({
         series: [
           {
             ...prevChartData.series[0],
-            data: internalHumidity,
+            data: inCount,
           },
           {
             ...prevChartData.series[1],
-            data: externalHumidity,
+            data: outCount,
           },
         ],
         options: {
@@ -243,7 +237,7 @@ export default function HumidityChart({
         },
       }));
     }
-  }, [data, internalHumidityKey, externalHumidityKey, selectedZoom]);
+  }, [data, inKey, outKey, selectedZoom]);
 
   const getTickAmount = (zoom: string) => {
     switch (zoom) {
@@ -287,9 +281,9 @@ export default function HumidityChart({
             },
             formatter: function (val: any) {
               if (axis.title.text === "Humidade Interna (%)") {
-                return `${val} %`;
+                return `${val}`;
               } else if (axis.title.text === "Humidade Externa (%)") {
-                return `${val} %`;
+                return `${val}`;
               }
               return val;
             },
@@ -347,9 +341,9 @@ export default function HumidityChart({
               { series, seriesIndex, dataPointIndex, w }: any,
             ) {
               if (seriesIndex === 0) {
-                return `${val} %`;
+                return `${val}`;
               } else if (seriesIndex === 1) {
-                return `${val} %`;
+                return `${val}`;
               }
               return val;
             },

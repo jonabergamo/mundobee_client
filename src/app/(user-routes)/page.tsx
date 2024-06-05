@@ -31,6 +31,8 @@ import TemperatureChart from "@/components/charts/TemperatureChart";
 import HumidityChart from "@/components/charts/HumidityChart";
 import { decryptData, encryptData } from "@/helper/Cypto";
 import Cookies from "js-cookie";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import InOutChart from "@/components/charts/inOutChart";
 
 export default function Dashboard() {
   const axios = useAxios();
@@ -73,8 +75,9 @@ export default function Dashboard() {
 
   const { data, error, isLoading } = useQuery({
     queryKey: ["metricsData", { selectedDevice }],
-    queryFn: () => fetchMetricsData(selectedDevice ?? devicesData[0], "minute"),
-    refetchInterval: 60000, // Refetch the data every 5 minutes
+    queryFn: () =>
+      fetchMetricsData(selectedDevice ?? devicesData[0], "fiveMinutes"),
+    refetchInterval: 60000 * 5, // Refetch the data every 5 minutes
     enabled: !!devicesData,
   });
 
@@ -82,29 +85,27 @@ export default function Dashboard() {
     const dailyInCount = data?.dailyInCount ?? 0;
     const dailyOutCount = data?.dailyOutCount ?? 0;
 
-    const minCount = Math.min(dailyInCount, dailyOutCount);
-    const maxCount = Math.max(dailyInCount, dailyOutCount);
-
-    if (minCount === 0) {
+    if (dailyOutCount === 0) {
       return 0;
     }
 
-    const percentageIncrease = ((maxCount - minCount) / minCount) * 100;
+    const flowPercentage =
+      ((dailyInCount - dailyOutCount) / dailyOutCount) * 100;
 
-    return percentageIncrease;
+    return flowPercentage;
   }, [data?.dailyInCount, data?.dailyOutCount]);
 
   return (
     <div className="flex h-screen flex-col gap-3">
       <Header title="Dashboard" />
-      <div className="flex w-full flex-col items-start justify-center gap-2 overflow-y-auto">
+      <div className="mb-10 flex max-h-full flex-wrap gap-4 overflow-y-auto px-2 py-2">
         <Card className="flex justify-center gap-2 p-5">
           <ToggleGroup
             type="single"
             variant="outline"
             className="flex items-start gap-2"
             onValueChange={(value) => {
-              setSelectedZoom(value as typeof selectedZoom);
+              if (value) setSelectedZoom(value as typeof selectedZoom);
             }}
             value={selectedZoom}
           >
@@ -196,13 +197,13 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
-
-        <Card className="w-full">
+        <Card className="mb-14 w-full">
           <CardHeader>
             <CardTitle>Métricas</CardTitle>
           </CardHeader>
-          <CardContent className="flex gap-2">
+          <CardContent className="flex flex-col gap-2 xl:flex-row">
             <TemperatureChart
+              id="graph2"
               title="Temperatura"
               data={data?.metrics}
               isLoading={isLoading}
@@ -211,8 +212,8 @@ export default function Dashboard() {
               externalTempKey="outsideTemp"
               actualZoom={selectedZoom}
               description="Dados de sensores de temperatura da área interna e externa da colmeia."
-              minIdeal={22}
-              maxIdeal={24}
+              minIdeal={30}
+              maxIdeal={35}
             />
             <HumidityChart
               id="graph1"
@@ -224,8 +225,21 @@ export default function Dashboard() {
               externalHumidityKey="outsideHumidity"
               actualZoom={selectedZoom}
               description="Dados de sensores de humidade da área interna e externa da colmeia."
-              minIdeal={64}
-              maxIdeal={68}
+              minIdeal={40}
+              maxIdeal={80}
+            />
+            <InOutChart
+              id="graph3"
+              title="Entradas e Saídas"
+              data={data?.metrics}
+              isLoading={isLoading}
+              error={error}
+              inKey="inCount"
+              outKey="outCount"
+              actualZoom={selectedZoom}
+              description="Dados de sensores de entradas e saidas de abelhas."
+              minIdeal={68}
+              maxIdeal={74}
             />
           </CardContent>
         </Card>

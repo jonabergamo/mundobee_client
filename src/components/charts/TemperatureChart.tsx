@@ -11,6 +11,19 @@ import { Metric } from "@/types/Metric";
 import { useTheme } from "next-themes";
 import { DateTime } from "luxon";
 
+const getTickAmount = (zoom: string) => {
+  switch (zoom) {
+    case "day":
+      return 9;
+    case "week":
+      return 7;
+    case "month":
+      return 30;
+    default:
+      return 9;
+  }
+};
+
 type TemperatureChartProps = {
   title?: string;
   description?: string;
@@ -70,7 +83,8 @@ export default function TemperatureChart({
       },
       xaxis: {
         type: "datetime",
-        tickAmount: 9,
+        tickAmount: getTickAmount(actualZoom),
+        tickPlacement: "on",
         labels: {
           style: {
             colors: theme === "dark" ? "#FFF" : "#000",
@@ -89,6 +103,8 @@ export default function TemperatureChart({
             text: "Temperatura Interna (°C)",
             style: {
               color: theme === "dark" ? "#FFF" : "#000",
+              fontFamily: "Helvetica, Arial, sans-serif",
+              fontWeight: 600,
             },
           },
           labels: {
@@ -99,8 +115,14 @@ export default function TemperatureChart({
               return `${val} °C`;
             },
           },
+          min: -10,
+          max: 50,
+          tickAmount: 10,
         },
         {
+          min: -10,
+          max: 50,
+          tickAmount: 10,
           opposite: true,
           title: {
             text: "Temperatura Externa (°C)",
@@ -238,19 +260,6 @@ export default function TemperatureChart({
     }
   }, [data, internalTempKey, externalTempKey, selectedZoom]);
 
-  const getTickAmount = (zoom: string) => {
-    switch (zoom) {
-      case "day":
-        return 9;
-      case "week":
-        return 7;
-      case "month":
-        return 30;
-      default:
-        return 9;
-    }
-  };
-
   useEffect(() => {
     setChartData((prevChartData: any) => ({
       ...prevChartData,
@@ -270,6 +279,8 @@ export default function TemperatureChart({
             ...axis.title,
             style: {
               color: theme === "dark" ? "#FFF" : "#000",
+              fontFamily: "Helvetica, Arial, sans-serif",
+              fontWeight: 500,
             },
           },
           labels: {
