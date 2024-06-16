@@ -1,5 +1,6 @@
 {
 	"compilerOptions": {
+		"target": "es5",
 		"lib": [
 			"dom",
 			"dom.iterable",
@@ -23,18 +24,17 @@
 		],
 		"paths": {
 			"@/*": [
-				"src/*"
+				"./src/*"
 			]
-		},
-		"types": [
-			"@testing-library/jest-dom"
-		]
+		}
 	},
 	"include": [
 		"next-env.d.ts",
 		"**/*.ts",
 		"**/*.tsx",
-		".next/types/**/*.ts"
+		".next/types/**/*.ts",
+		"src/app/data/v4f/faker.js",
+		"src/constants/tablesColumns/useEmployeesColumns.tsx"
 	],
 	"exclude": [
 		"node_modules"
