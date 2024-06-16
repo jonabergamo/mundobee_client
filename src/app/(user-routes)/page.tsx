@@ -77,7 +77,7 @@ export default function Dashboard() {
     queryKey: ["metricsData", { selectedDevice }],
     queryFn: () =>
       fetchMetricsData(selectedDevice ?? devicesData[0], "fiveMinutes"),
-    refetchInterval: 60000 * 5, // Refetch the data every 5 minutes
+    refetchInterval: 60000 * 1, // Refetch the data every 5 minutes
     enabled: !!devicesData,
   });
 
