@@ -27,19 +27,24 @@ import {
 } from "@/components/ui/select";
 import { AxiosResponse } from "axios";
 import { useAuth } from "@/context/authContext";
-import TemperatureChart from "@/components/charts/TemperatureChart";
-import HumidityChart from "@/components/charts/HumidityChart";
 import { decryptData, encryptData } from "@/helper/Cypto";
 import Cookies from "js-cookie";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import InOutChart from "@/components/charts/inOutChart";
+import { AreaChartHero } from "@/components/charts/AreaChart";
+import { DatePickerWithRange } from "@/components/date-picker";
+import {
+  DateRangePicker,
+  DateRangePickerItem,
+  DateRangePickerValue,
+} from "@tremor/react";
+import { ptBR } from "date-fns/locale";
 
 export default function Dashboard() {
   const axios = useAxios();
   const { user } = useAuth();
-  const [selectedZoom, setSelectedZoom] = useState<"day" | "week" | "month">(
-    "day",
-  );
+  const [value, setValue] = useState<DateRangePickerValue>({
+    from: new Date(),
+    to: new Date(),
+  });
 
   const [selectedDevice, setSelectedDevice] = useState<string>();
 
@@ -77,7 +82,7 @@ export default function Dashboard() {
     queryKey: ["metricsData", { selectedDevice }],
     queryFn: () =>
       fetchMetricsData(selectedDevice ?? devicesData[0], "fiveMinutes"),
-    refetchInterval: 60000 * 1, // Refetch the data every 5 minutes
+    refetchInterval: 1000, // Refetch the data every 5 minutes
     enabled: !!devicesData,
   });
 
@@ -95,78 +100,124 @@ export default function Dashboard() {
     return flowPercentage;
   }, [data?.dailyInCount, data?.dailyOutCount]);
 
+  useEffect(() => {
+    console.log(data);
+  }, [data]);
+
+  const tempFormatter = (value: any) => `${value}°C`;
+  const humidityFormatter = (value: any) => `${value}%`;
+
   return (
     <div className="flex h-screen flex-col gap-3">
       <Header title="Dashboard" />
-      <div className="mb-10 flex max-h-full flex-wrap gap-4 overflow-y-auto px-2 py-2">
-        <Card className="flex justify-center gap-2 p-5">
-          <ToggleGroup
-            type="single"
-            variant="outline"
-            className="flex items-start gap-2"
-            onValueChange={(value) => {
-              if (value) setSelectedZoom(value as typeof selectedZoom);
-            }}
-            value={selectedZoom}
+      <div className="flex w-full items-center justify-start gap-2 px-2">
+        <Select
+          value={selectedDevice}
+          onValueChange={(value) => {
+            setSelectedDevice(value);
+            const encryptedData = encryptData(value);
+            Cookies.set("pref_dev", encryptedData, {
+              secure: true,
+              sameSite: "strict",
+            });
+          }}
+        >
+          <SelectTrigger className="w-fit">
+            <SelectValue placeholder="Selecione o dispositivo" />
+          </SelectTrigger>
+          <SelectContent>
+            {devicesData?.owned?.map((device: any) => (
+              <SelectItem value={device.id} key={device.id}>
+                {device.name}
+              </SelectItem>
+            ))}
+            {devicesData?.viewer?.map((device: any) => (
+              <SelectItem value={device.id} key={device.id}>
+                {device.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <DateRangePicker
+          className="w-full"
+          value={value}
+          onValueChange={setValue}
+          locale={ptBR}
+          selectPlaceholder="Hoje"
+          color="rose"
+          defaultValue={{ from: new Date(), to: new Date() }}
+          enableYearNavigation
+          weekStartsOn={1}
+          enableClear={false}
+        >
+          <DateRangePickerItem
+            key="today"
+            value="today"
+            from={new Date()}
+            to={new Date()}
           >
-            <ToggleGroupItem value="day" aria-label="Toggle Day">
-              Diário
-            </ToggleGroupItem>
-            <ToggleGroupItem value="week" aria-label="Toggle Week">
-              Semanal
-            </ToggleGroupItem>
-            <ToggleGroupItem value="month" aria-label="Toggle Month">
-              Mensal
-            </ToggleGroupItem>
-          </ToggleGroup>
-          <Select
-            value={selectedDevice}
-            onValueChange={(value) => {
-              setSelectedDevice(value);
-              const encryptedData = encryptData(value);
-              Cookies.set("pref_dev", encryptedData, {
-                secure: true,
-                sameSite: "strict",
-              });
-            }}
+            Hoje
+          </DateRangePickerItem>
+          <DateRangePickerItem
+            key="week"
+            value="week"
+            from={new Date(new Date().setDate(new Date().getDate() - 7))}
+            to={new Date()}
           >
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione o dispositivo" />
-            </SelectTrigger>
-            <SelectContent>
-              {devicesData?.owned?.map((device: any) => (
-                <SelectItem value={device.id} key={device.id}>
-                  {device.name}
-                </SelectItem>
-              ))}
-              {devicesData?.viewer?.map((device: any) => (
-                <SelectItem value={device.id} key={device.id}>
-                  {device.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Card>
-        <div className="flex flex-wrap gap-2">
-          <Card className="aspect-square">
-            <CardHeader>
-              <CardTitle>Entradas</CardTitle>
-              <CardDescription>Entradas de abelhas.</CardDescription>
-            </CardHeader>
-            <CardContent className="flex">
-              <Label className="text-6xl">{data?.dailyInCount}</Label>
-            </CardContent>
-          </Card>
-          <Card className="aspect-square">
-            <CardHeader>
-              <CardTitle>Saídas</CardTitle>
-              <CardDescription>Saídas de abelhas.</CardDescription>
-            </CardHeader>
-            <CardContent className="flex">
-              <Label className="text-6xl">{data?.dailyOutCount}</Label>
-            </CardContent>
-          </Card>
-          <Card>
+            Última Semana
+          </DateRangePickerItem>
+          <DateRangePickerItem
+            key="month"
+            value="month"
+            from={new Date(new Date().setMonth(new Date().getMonth() - 1))}
+            to={new Date()}
+          >
+            Último Mês
+          </DateRangePickerItem>
+          <DateRangePickerItem
+            key="half"
+            value="half"
+            from={new Date(new Date().setMonth(new Date().getMonth() - 6))}
+            to={new Date()}
+          >
+            Último Semestre
+          </DateRangePickerItem>
+          <DateRangePickerItem
+            key="year"
+            value="year"
+            from={
+              new Date(new Date().setFullYear(new Date().getFullYear(), 0, 1))
+            }
+            to={new Date()}
+          >
+            Este Ano
+          </DateRangePickerItem>
+        </DateRangePicker>
+        {/* <DatePickerWithRange /> */}
+      </div>
+      <div className="mb-10 flex max-h-full flex-col gap-4 overflow-y-auto px-2 py-2">
+        <div className="flex w-full flex-col gap-2 lg:flex-row">
+          <div className="flex flex-col gap-2">
+            <Card className="">
+              <CardHeader>
+                <CardTitle>Entradas</CardTitle>
+                <CardDescription>Entradas de abelhas.</CardDescription>
+              </CardHeader>
+              <CardContent className="flex">
+                <Label className="text-6xl">{data?.dailyInCount}</Label>
+              </CardContent>
+            </Card>
+            <Card className="">
+              <CardHeader>
+                <CardTitle>Saídas</CardTitle>
+                <CardDescription>Saídas de abelhas.</CardDescription>
+              </CardHeader>
+              <CardContent className="flex">
+                <Label className="text-6xl">{data?.dailyOutCount}</Label>
+              </CardContent>
+            </Card>
+          </div>
+          <Card className="">
             <CardHeader>
               <CardTitle>Fluxo de entrada/saída</CardTitle>
               <CardDescription>
@@ -196,52 +247,43 @@ export default function Dashboard() {
               </Label>
             </CardContent>
           </Card>
+          <Card className="w-full p-5">
+            <AreaChartHero
+              data={data?.metrics.map((metric: any) => ({
+                ...metric,
+                Entradas: metric.inCount,
+                Saídas: metric.outCount,
+              }))}
+              categories={["Entradas", "Saídas"]}
+              index="timestamp"
+              title="Entradas/Saídas"
+            />
+          </Card>
         </div>
-        <Card className="mb-14 w-full">
-          <CardHeader>
-            <CardTitle>Métricas</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-2 xl:flex-row">
-            <TemperatureChart
-              id="graph2"
-              title="Temperatura"
-              data={data?.metrics}
-              isLoading={isLoading}
-              error={error}
-              internalTempKey="temperature"
-              externalTempKey="outsideTemp"
-              actualZoom={selectedZoom}
-              description="Dados de sensores de temperatura da área interna e externa da colmeia."
-              minIdeal={30}
-              maxIdeal={35}
-            />
-            <HumidityChart
-              id="graph1"
-              title="Humidade"
-              data={data?.metrics}
-              isLoading={isLoading}
-              error={error}
-              internalHumidityKey="humidity"
-              externalHumidityKey="outsideHumidity"
-              actualZoom={selectedZoom}
-              description="Dados de sensores de humidade da área interna e externa da colmeia."
-              minIdeal={40}
-              maxIdeal={80}
-            />
-            <InOutChart
-              id="graph3"
-              title="Entradas e Saídas"
-              data={data?.metrics}
-              isLoading={isLoading}
-              error={error}
-              inKey="inCount"
-              outKey="outCount"
-              actualZoom={selectedZoom}
-              description="Dados de sensores de entradas e saidas de abelhas."
-              minIdeal={68}
-              maxIdeal={74}
-            />
-          </CardContent>
+        <Card className="flex flex-col gap-4 p-5">
+          <Label className="text-2xl">Métricas</Label>
+          <AreaChartHero
+            data={data?.metrics.map((metric: any) => ({
+              ...metric,
+              Interna: metric.temperature,
+              Externa: metric.outsideTemp,
+            }))}
+            categories={["Interna", "Externa"]}
+            index="timestamp"
+            valueFormatter={tempFormatter}
+            title="Temperatura"
+          />
+          <AreaChartHero
+            data={data?.metrics.map((metric: any) => ({
+              ...metric,
+              Interna: metric.humidity,
+              Externa: metric.outsideHumidity,
+            }))}
+            categories={["Interna", "Externa"]}
+            index="timestamp"
+            valueFormatter={humidityFormatter}
+            title="Umidade"
+          />
         </Card>
       </div>
     </div>
