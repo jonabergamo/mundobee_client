@@ -265,10 +265,10 @@ export default function Dashboard() {
           <AreaChartHero
             data={data?.metrics.map((metric: any) => ({
               ...metric,
-              Interna: metric.temperature,
-              Externa: metric.outsideTemp,
+              "Temperatura Interna": metric.temperature,
+              "Temperatura Externa": metric.outsideTemp,
             }))}
-            categories={["Interna", "Externa"]}
+            categories={["Temperatura Interna", "Temperatura Externa"]}
             index="timestamp"
             valueFormatter={tempFormatter}
             title="Temperatura"
@@ -276,10 +276,10 @@ export default function Dashboard() {
           <AreaChartHero
             data={data?.metrics.map((metric: any) => ({
               ...metric,
-              Interna: metric.humidity,
-              Externa: metric.outsideHumidity,
+              "Umidade Interna": metric.humidity,
+              "Umidade Externa": metric.outsideHumidity,
             }))}
-            categories={["Interna", "Externa"]}
+            categories={["Umidade Interna", "Umidade Externa"]}
             index="timestamp"
             valueFormatter={humidityFormatter}
             title="Umidade"
