@@ -19,9 +19,7 @@ import { IoMdArrowDropdown } from "react-icons/io";
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -30,20 +28,20 @@ import { useAuth } from "@/context/authContext";
 import { decryptData, encryptData } from "@/helper/Cypto";
 import Cookies from "js-cookie";
 import { AreaChartHero } from "@/components/charts/AreaChart";
-import { DatePickerWithRange } from "@/components/date-picker";
 import {
   DateRangePicker,
   DateRangePickerItem,
   DateRangePickerValue,
 } from "@tremor/react";
 import { ptBR } from "date-fns/locale";
+import { addDays } from "date-fns";
 
 export default function Dashboard() {
   const axios = useAxios();
   const { user } = useAuth();
   const [value, setValue] = useState<DateRangePickerValue>({
     from: new Date(),
-    to: new Date(),
+    to: addDays(new Date(), 1), // Inicialmente, "Hoje" + 1 dia
   });
 
   const [selectedDevice, setSelectedDevice] = useState<string>();
@@ -56,11 +54,27 @@ export default function Dashboard() {
     }
   }, []);
 
-  const fetchMetricsData = async (deviceId: string, interval: string) => {
-    const response = await axios.get(
-      `metrics/device/${deviceId}?interval=${interval}`,
-    );
-    return response.data;
+  const fetchMetricsData = async (
+    deviceId: string,
+    fromDate: Date,
+    toDate: Date,
+  ) => {
+    // Format dates to YYYY-MM-DD format
+    const from = fromDate.toISOString().split("T")[0]; // Convert to ISO string and extract date part
+    const to = toDate.toISOString().split("T")[0]; // Convert to ISO string and extract date part
+
+    console.log(`metrics/device/${deviceId}?from=${from}&to=${to}`);
+
+    try {
+      const response = await axios.get(
+        `metrics/device/${deviceId}?from=${from}&to=${to}`,
+      );
+      return response.data;
+    } catch (error) {
+      // Handle error
+      console.error("Error fetching metrics data:", error);
+      throw error; // Rethrow the error or handle as needed
+    }
   };
 
   const { data: devicesData, error: devicesError } = useQuery({
@@ -79,9 +93,12 @@ export default function Dashboard() {
   });
 
   const { data, error, isLoading } = useQuery({
-    queryKey: ["metricsData", { selectedDevice }],
+    queryKey: [
+      "metricsData",
+      { selectedDevice, from: value.from, to: value.to },
+    ],
     queryFn: () =>
-      fetchMetricsData(selectedDevice ?? devicesData[0], "fiveMinutes"),
+      fetchMetricsData(selectedDevice ?? devicesData[0], value.from, value.to),
     refetchInterval: 1000, // Refetch the data every 5 minutes
     enabled: !!devicesData,
   });
@@ -145,7 +162,7 @@ export default function Dashboard() {
           locale={ptBR}
           selectPlaceholder="Hoje"
           color="rose"
-          defaultValue={{ from: new Date(), to: new Date() }}
+          defaultValue={{ from: new Date(), to: addDays(new Date(), 1) }} // Inicialmente, "Hoje" + 1 dia
           enableYearNavigation
           weekStartsOn={1}
           enableClear={false}
@@ -154,7 +171,7 @@ export default function Dashboard() {
             key="today"
             value="today"
             from={new Date()}
-            to={new Date()}
+            to={addDays(new Date(), 1)}
           >
             Hoje
           </DateRangePickerItem>
@@ -162,7 +179,7 @@ export default function Dashboard() {
             key="week"
             value="week"
             from={new Date(new Date().setDate(new Date().getDate() - 7))}
-            to={new Date()}
+            to={addDays(new Date(), 1)}
           >
             Última Semana
           </DateRangePickerItem>
@@ -170,7 +187,7 @@ export default function Dashboard() {
             key="month"
             value="month"
             from={new Date(new Date().setMonth(new Date().getMonth() - 1))}
-            to={new Date()}
+            to={addDays(new Date(), 1)}
           >
             Último Mês
           </DateRangePickerItem>
@@ -178,7 +195,7 @@ export default function Dashboard() {
             key="half"
             value="half"
             from={new Date(new Date().setMonth(new Date().getMonth() - 6))}
-            to={new Date()}
+            to={addDays(new Date(), 1)}
           >
             Último Semestre
           </DateRangePickerItem>
@@ -188,7 +205,7 @@ export default function Dashboard() {
             from={
               new Date(new Date().setFullYear(new Date().getFullYear(), 0, 1))
             }
-            to={new Date()}
+            to={addDays(new Date(), 1)}
           >
             Este Ano
           </DateRangePickerItem>
@@ -267,8 +284,13 @@ export default function Dashboard() {
               ...metric,
               "Temperatura Interna": metric.temperature,
               "Temperatura Externa": metric.outsideTemp,
+              "Temperatura Exterior": metric.externalTemp,
             }))}
-            categories={["Temperatura Interna", "Temperatura Externa"]}
+            categories={[
+              "Temperatura Interna",
+              "Temperatura Externa",
+              "Temperatura Exterior",
+            ]}
             index="timestamp"
             valueFormatter={tempFormatter}
             title="Temperatura"
@@ -278,8 +300,13 @@ export default function Dashboard() {
               ...metric,
               "Umidade Interna": metric.humidity,
               "Umidade Externa": metric.outsideHumidity,
+              "Umidade Exterior": metric.externalHumidity,
             }))}
-            categories={["Umidade Interna", "Umidade Externa"]}
+            categories={[
+              "Umidade Interna",
+              "Umidade Externa",
+              "Umidade Exterior",
+            ]}
             index="timestamp"
             valueFormatter={humidityFormatter}
             title="Umidade"

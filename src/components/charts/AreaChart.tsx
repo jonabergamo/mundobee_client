@@ -1,16 +1,7 @@
 "use client";
-import {
-  LineChart,
-  EventProps,
-  ValueFormatter,
-  CustomTooltipProps,
-} from "@tremor/react";
-import { useState } from "react";
-import { format } from "date-fns";
+import { LineChart, ValueFormatter } from "@tremor/react";
 import { DateTime } from "luxon";
 import { Label } from "../ui/label";
-import { Card, CardContent, CardHeader } from "../ui/card";
-import { Separator } from "../ui/separator";
 
 const dateFormatter = (dateString: string) => {
   return DateTime.fromISO(dateString).toUTC().toFormat("dd LLL HH:mm");
@@ -43,13 +34,13 @@ export function AreaChartHero({
         data={formattedData}
         index={index}
         categories={categories}
-        colors={["yellow-500", "blue-500", "#f0652f"]}
+        colors={["yellow-500", "blue-500", "orange-500"]}
         valueFormatter={valueFormatter}
         connectNulls={true}
         showAnimation
         curveType="natural"
         noDataText="Sem dados"
-        tickGap={10}
+        tickGap={5}
       />
     </div>
   );
